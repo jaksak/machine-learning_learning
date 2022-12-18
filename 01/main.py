@@ -8,7 +8,7 @@ environment.reset()
 qtable = np.zeros((environment.observation_space.n, environment.action_space.n))
 
 # Hyperparameters
-episodes = 1000  # Total number of episodes
+episodes = 15000  # Total number of episodes
 alpha = 0.5  # Learning rate
 gamma = 0.9  # Discount factor
 epsilon = 1.0  # Amount of randomness in the action selection
@@ -63,8 +63,8 @@ for i in range(episodes):
 print()
 print('===========================================')
 print('Q-table after training:')
-print(qtable)
-
+# print(qtable)
+print(list(map(lambda y: list(map(lambda x: int(x * 100), y)), qtable)))
 # Plot outcomes
 fig = plt.figure(figsize=(12, 5))
 plt.xlabel("Run number")
@@ -76,6 +76,9 @@ plt.show()
 
 episodes = 100
 nb_success = 0
+
+environment.close()
+environment = gym.make("FrozenLake-v1", is_slippery=True, render_mode="human")
 
 # Evaluation
 for _ in range(100):
