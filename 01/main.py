@@ -1,6 +1,7 @@
-import gym
-import numpy as np
+import gymnasium as gym
 import matplotlib.pyplot as plt
+import numpy as np
+
 environment = gym.make("FrozenLake-v1", is_slippery=True, render_mode="ansi")
 environment.reset()
 
@@ -13,16 +14,27 @@ alpha = 0.5  # Learning rate
 gamma = 0.9  # Discount factor
 epsilon = 1.0  # Amount of randomness in the action selection
 epsilon_decay = 0.001  # Fixed amount to decrease
+show_training_charts = False
 
 # List of outcomes to plot
 outcomes = []
 
-print('Q-table before training:')
-print(qtable)
+
+# print('Q-table before training:')
+# print(qtable)
+def print_qtable(qtable):
+    for index in range(len(qtable)):
+        value = qtable[index] * 100
+        with np.printoptions(formatter={'float': '{: 6.2f}'.format}):
+            if ((index - 3) % 4) == 0:
+                print(value)
+            else:
+                print(value, end=' ')
+    print()
+
 
 # Training
 for i in range(episodes):
-    print(i)
     state = environment.reset()[0]
     done = False
 
@@ -36,11 +48,11 @@ for i in range(episodes):
 
         # If random number < epsilon, take a random action
         if rnd < epsilon:
+            # eskploracja
             action = environment.action_space.sample()
         # Else, take the action with the highest value in the current state
         else:
-            print('eksploatacja')
-            # print(list(map(lambda x: int(x*100), qtable[state])))
+            # eksploatacja
             action = np.argmax(qtable[state])
 
         # Implement this action and move the agent in the desired direction
@@ -63,16 +75,16 @@ for i in range(episodes):
 print()
 print('===========================================')
 print('Q-table after training:')
-# print(qtable)
-print(list(map(lambda y: list(map(lambda x: int(x * 100), y)), qtable)))
-# Plot outcomes
-fig = plt.figure(figsize=(12, 5))
-plt.xlabel("Run number")
-plt.ylabel("Outcome")
-ax = plt.gca()
-ax.set_facecolor('#efeeea')
-plt.bar(range(len(outcomes)), outcomes, color="#0A047A", width=1.0)
-plt.show()
+print_qtable(qtable)
+
+if show_training_charts:
+    fig = plt.figure(figsize=(12, 5))
+    plt.xlabel("Run number")
+    plt.ylabel("Outcome")
+    ax = plt.gca()
+    ax.set_facecolor('#efeeea')
+    plt.bar(range(len(outcomes)), outcomes, color="#0A047A", width=1.0)
+    plt.show()
 
 episodes = 100
 nb_success = 0
@@ -81,7 +93,7 @@ environment.close()
 environment = gym.make("FrozenLake-v1", is_slippery=True, render_mode="human")
 
 # Evaluation
-for _ in range(100):
+for _ in range(episodes):
 
     state = environment.reset()[0]
     done = False
