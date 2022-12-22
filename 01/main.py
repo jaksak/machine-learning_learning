@@ -8,6 +8,9 @@ environment.reset()
 # We re-initialize the Q-table
 qtable = np.zeros((environment.observation_space.n, environment.action_space.n))
 
+# jakub: zmiana w api? brak nagrody na polu koncowym?
+qtable[15] = np.array([1, 1, 1, 1])
+
 # Hyperparameters
 episodes = 15000  # Total number of episodes
 alpha = 0.5  # Learning rate
