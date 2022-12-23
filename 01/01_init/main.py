@@ -1,8 +1,10 @@
+import random
+
 import gymnasium as gym
 import matplotlib.pyplot as plt
 import numpy as np
 
-environment = gym.make("FrozenLake-v1", is_slippery=True, render_mode="ansi")
+environment = gym.make("FrozenLake-v1", is_slippery=True, render_mode=None)
 environment.reset()
 
 # We re-initialize the Q-table
@@ -12,16 +14,19 @@ qtable = np.zeros((environment.observation_space.n, environment.action_space.n))
 qtable[15] = np.array([1, 1, 1, 1])
 
 # Hyperparameters
-episodes = 15000  # Total number of episodes
+episodes = 10000  # Total number of episodes
 alpha = 0.5  # Learning rate
 gamma = 0.9  # Discount factor
 epsilon = 1.0  # Amount of randomness in the action selection
-epsilon_decay = 0.001  # Fixed amount to decrease
+epsilon_decay = 0.0001  # Fixed amount to decrease
 show_training_charts = False
+nrows = 4
 
 # List of outcomes to plot
 outcomes = []
 
+
+# historia przejsc
 
 # print('Q-table before training:')
 # print(qtable)
@@ -35,17 +40,54 @@ def print_qtable(qtable):
                 print(value, end=' ')
     print()
 
+def print_qtable_argmax(qtable):
+    for index in range(len(qtable)):
+        value = np.argmax(qtable[index])
+        tmp0 = np.array([0] * 4)
+        if np.array_equal(qtable[index], tmp0):
+            value = 'X'
+        elif value == 0:
+            value = 'L'
+        elif value == 1:
+            value = 'D'
+        elif value == 2:
+            value = 'R'
+        else:
+            value = 'U'
+        if ((index - 3) % 4) == 0:
+            print(value)
+        else:
+            print(value, end=' ')
+    print()
+
+def disable_impossible_actions(current_state, prob):
+    prob = np.copy(prob)
+    x = current_state % nrows
+    y = current_state // nrows
+    if y == 0:
+        prob[3] = -100
+    if x == 0:
+        prob[0] = -100
+    if y == nrows - 1:
+        prob[1] = -100
+    if x == nrows - 1:
+        prob[2] = -100
+    prob[random.randint(0, len(prob) - 1)] = -100
+    return prob
 
 # Training
 for i in range(episodes):
     state = environment.reset()[0]
     done = False
+    truncated = False
 
     # By default, we consider our outcome to be a failure
     outcomes.append("Failure")
 
+    visitedPath = []
+
     # Until the agent gets stuck in a hole or reaches the goal, keep training it
-    while not done:
+    while not done and not truncated:
         # Generate a random number between 0 and 1
         rnd = np.random.random()
 
@@ -60,6 +102,19 @@ for i in range(episodes):
 
         # Implement this action and move the agent in the desired direction
         new_state, reward, done, truncated, info = environment.step(action)
+        visitedPath.append(state)
+
+        if done and reward == 0:
+            reward = -5
+        elif new_state == state:
+            reward = -1
+            truncated = True
+        elif new_state in visitedPath:
+            reward = 0
+        elif reward == 0:
+            reward = 0.2
+        elif reward == 1:
+            reward = 5
 
         # Update Q(s,a)
         qtable[state, action] = qtable[state, action] + \
@@ -79,6 +134,7 @@ print()
 print('===========================================')
 print('Q-table after training:')
 print_qtable(qtable)
+print_qtable_argmax(qtable)
 
 if show_training_charts:
     fig = plt.figure(figsize=(12, 5))
@@ -89,20 +145,23 @@ if show_training_charts:
     plt.bar(range(len(outcomes)), outcomes, color="#0A047A", width=1.0)
     plt.show()
 
-episodes = 100
+episodes = 1000
 nb_success = 0
 
 environment.close()
-environment = gym.make("FrozenLake-v1", is_slippery=True, render_mode="human")
+environment = gym.make("FrozenLake-v1", is_slippery=True, render_mode=None)
+# environment = gym.make("FrozenLake-v1", is_slippery=True, render_mode='human')
+# environment = gym.wrappers.TimeLimit(environment, max_episode_steps=30)
 
 # Evaluation
 for _ in range(episodes):
 
     state = environment.reset()[0]
     done = False
+    truncated = False
 
     # Until the agent gets stuck or reaches the goal, keep training it
-    while not done:
+    while not done and not truncated:
         # Choose the action with the highest value in the current state
         action = np.argmax(qtable[state])
 

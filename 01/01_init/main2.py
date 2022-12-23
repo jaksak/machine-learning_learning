@@ -3,7 +3,7 @@ import random
 import gymnasium as gym
 import numpy as np
 
-env = gym.make('FrozenLake-v1', desc=None, map_name="4x4", is_slippery=False)
+env = gym.make('FrozenLake-v1', desc=None, map_name="4x4", is_slippery=True)
 action_size = env.action_space.n
 state_size = env.observation_space.n
 
@@ -86,9 +86,12 @@ for episode in range(total_episodes):
 print("Score over time: " + str(sum(rewards) / total_episodes))
 print(qtable)
 
-env.reset()
+env.close()
+env = gym.make("FrozenLake-v1", is_slippery=False, render_mode=None)
 
-for episode in range(0):
+nb_success = 0
+test_episodes_amount = 100
+for episode in range(test_episodes_amount):
     state = env.reset()[0]
     step = 0
     done = False
@@ -103,6 +106,9 @@ for episode in range(0):
         new_state, reward, done, truncated, info = env.step(action)
 
         if done:
+            nb_success += 1
             break
         state = new_state
 env.close()
+# Let's check our success rate!
+print(f"Success rate = {nb_success / test_episodes_amount * 100}%")
