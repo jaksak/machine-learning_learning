@@ -3,7 +3,7 @@ import random
 import gymnasium as gym
 import matplotlib.pyplot as plt
 import numpy as np
-map_name = '4x4'
+map_name = '8x8'
 environment = gym.make("FrozenLake-v1", is_slippery=True, map_name=map_name, render_mode=None)
 environment.reset()
 
@@ -14,13 +14,13 @@ qtable = np.zeros((environment.observation_space.n, environment.action_space.n))
 # qtable[15] = np.array([1, 1, 1, 1])
 
 # Hyperparameters
-episodes = 10000  # Total number of episodes
+episodes = 100000  # Total number of episodes
 alpha = 0.5  # Learning rate
 gamma = 0.9  # Discount factor
 epsilon = 1.0  # Amount of randomness in the action selection
-epsilon_decay = 0.0001  # Fixed amount to decrease
+epsilon_decay = 0.00001  # Fixed amount to decrease
 show_training_charts = False
-nrows = 4
+nrows = 8
 
 # List of outcomes to plot
 outcomes = []
@@ -112,9 +112,9 @@ for i in range(episodes):
         elif new_state in visitedPath:
             reward = 0
         elif reward == 0:
-            reward = 0.2
+            reward = 0.0
         elif reward == 1:
-            reward = 5
+            reward = 500
 
         # Update Q(s,a)
         qtable[state, action] = qtable[state, action] + \
@@ -149,8 +149,8 @@ episodes = 1000
 nb_success = 0
 
 environment.close()
-# environment = gym.make("FrozenLake-v1", is_slippery=True, map_name=map_name, render_mode=None)
-environment = gym.make("FrozenLake-v1", is_slippery=True, map_name=map_name, render_mode='human')
+environment = gym.make("FrozenLake-v1", is_slippery=True, map_name=map_name, render_mode=None)
+# environment = gym.make("FrozenLake-v1", is_slippery=True, map_name=map_name, render_mode='human')
 # environment = gym.wrappers.TimeLimit(environment, max_episode_steps=30)
 
 # Evaluation
